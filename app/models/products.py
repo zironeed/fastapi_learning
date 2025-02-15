@@ -12,7 +12,7 @@ class Product(Base):
     slug = Column(String, unique=True, index=True)
     description = Column(String)
     price = Column(Integer)
-    image_url = Column(String)
+    image_url = Column(String, nullable=True)
     stock = Column(Integer)
     category_id = Column(Integer, ForeignKey('categories.id'))
     rating = Column(Float)

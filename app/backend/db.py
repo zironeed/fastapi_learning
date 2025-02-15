@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 
 # Dialect+driver://username:password@host:port/database
-engine = create_engine('sqlite:///commerce.db', echo=True)
+engine = create_engine('sqlite:///ecommerce.db', echo=True)
 SessionLocal = sessionmaker(bind=engine)
 
 

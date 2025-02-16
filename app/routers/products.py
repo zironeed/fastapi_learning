@@ -15,9 +15,9 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 @router.get('/')
 async def get_all_products(db: Annotated[AsyncSession, Depends(get_db)]):
-    products = db.scalars(select(Product).where(Product.is_active == True, Product.stock > 0)).all()
+    products = await db.scalars(select(Product).where(Product.is_active == True, Product.stock > 0))
     if products:
-        return products
+        return products.all()
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='There are no product')
 
 
@@ -29,7 +29,7 @@ async def create_product(db: Annotated[AsyncSession, Depends(get_db)], product: 
         price=product.price,
         image_url=product.image_url,
         stock=product.stock,
-        category_id=product.category,
+        category_id=product.category_id,
         slug=slugify(product.name),
         rating=0.0
     ))
@@ -72,7 +72,7 @@ async def update_product(db: Annotated[AsyncSession, Depends(get_db)], product_s
         product_.price = product.price
         product_.image_url = product.image_url
         product_.stock = product.stock
-        product_.category_id = product.category
+        product_.category_id = product.category_id
         product_.slug = slugify(product.name)
         await db.commit()
         return {

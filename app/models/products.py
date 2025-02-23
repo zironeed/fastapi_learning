@@ -6,7 +6,7 @@ from app.backend.db import Base
 
 class Product(Base):
     __tablename__ = 'products'
-    __table_args__ = {'extend_existing': True}
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     slug = Column(String, unique=True, index=True)
@@ -14,6 +14,7 @@ class Product(Base):
     price = Column(Integer)
     image_url = Column(String, nullable=True)
     stock = Column(Integer)
+    supplier_id = Column(Integer, ForeignKey('users.id'), nullable=True)  # New
     category_id = Column(Integer, ForeignKey('categories.id'))
     rating = Column(Float)
     is_active = Column(Boolean, default=True)

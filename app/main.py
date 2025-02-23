@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import products, category
+from app.routers import products, category, auth
 
 app = FastAPI()
 
@@ -10,3 +10,4 @@ async def welcome() -> dict:
 
 app.include_router(category.router)
 app.include_router(products.router)
+app.include_router(auth.router)

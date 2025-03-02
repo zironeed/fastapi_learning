@@ -2,7 +2,6 @@ from typing import Annotated
 from fastapi import Depends, APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 from sqlalchemy import select, update
 
 from app.backend.db_depends import get_db
@@ -15,7 +14,8 @@ router = APIRouter(prefix='/permission', tags=['permission'])
 
 @router.patch('/')
 async def supplier_permission(
-        db: Annotated[AsyncSession, Depends(get_db)], get_user: Annotated[dict, Depends(get_current_user)], user_id: int
+        db: Annotated[AsyncSession, Depends(get_db)],
+        get_user: Annotated[dict, Depends(get_current_user)], user_id: int
 ):
     if get_user.get('is_admin'):
         user: User = await db.scalar(select(User).where(User.id == user_id))
@@ -53,7 +53,8 @@ async def supplier_permission(
 
 @router.delete('/')
 async def delete_user(
-        db: Annotated[AsyncSession, Depends(get_db)], get_user: Annotated[dict, Depends(get_current_user)], user_id: int
+        db: Annotated[AsyncSession, Depends(get_db)],
+        get_user: Annotated[dict, Depends(get_current_user)], user_id: int
 ):
     if get_user.get('is_admin'):
         user: User = await db.scalar(select(User).where(User.id == user_id))
@@ -70,7 +71,7 @@ async def delete_user(
             )
 
         if user.is_active:
-            await db.execute(update(User).where(User.id == user_id).values(User.is_active == False))
+            await db.execute(update(User).where(User.id == user_id).values(is_active=False))
             await db.commit()
             return JSONResponse(
                 status_code=status.HTTP_200_OK,

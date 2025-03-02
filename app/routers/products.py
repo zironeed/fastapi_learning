@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from slugify import slugify
-from sqlalchemy import select, insert, update
+from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 @router.get('/')
 async def get_all_products(db: Annotated[AsyncSession, Depends(get_db)]):
-    products = await db.scalars(select(Product).where(Product.is_active == True, Product.stock > 0))
+    products = await db.scalars(select(Product).where(Product.is_active is True, Product.stock > 0))
     if products:
         return products.all()
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='There are no product')
@@ -62,7 +62,7 @@ async def get_product_by_category(db: Annotated[AsyncSession, Depends(get_db)], 
         if categories:
             cats += [cat.id for cat in categories.all() if cat.is_active]
         products = await db.scalars(select(Product).where(
-            Product.category_id.in_(cats), Product.is_active == True, Product.stock > 0))
+            Product.category_id.in_(cats), Product.is_active is True, Product.stock > 0))
         if products:
             return products.all()
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not found.')
@@ -125,9 +125,9 @@ async def delete_product(db: Annotated[AsyncSession, Depends(get_db)], product_s
     product_delete = await db.scalar(select(Product).where(Product.slug == product_slug))
     if product_delete is None:
         raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='There is no product found'
-             )
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='There is no product found'
+        )
     if get_user.get('is_supplier') or get_user.get('is_admin'):
         if get_user.get('id') == product_delete.supplier_id or get_user.get('is_admin'):
             product_delete.is_active = False

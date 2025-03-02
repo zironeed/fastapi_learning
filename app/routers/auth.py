@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy import select, insert
 from typing import Annotated
-from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -94,7 +93,7 @@ async def create_access_token(username: str, user_id: int, is_admin: bool, is_su
 
 async def authenticate_user(db: Annotated[AsyncSession, Depends(get_db)], username: str, password: str):
     user = await db.scalar(select(User).where(User.username == username))
-    if not user or not bcrypt_context.verify(password, user.hashed_password) or user.is_active == False:
+    if not user or not bcrypt_context.verify(password, user.hashed_password) or user.is_active is False:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
@@ -115,6 +114,7 @@ async def login(
         'access_token': token,
         'type': 'bearer'
     }
+
 
 @router.get('/read_current_user')
 async def read_current_user(user: dict = Depends(get_current_user)):

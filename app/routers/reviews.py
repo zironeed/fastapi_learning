@@ -60,8 +60,7 @@ async def add_review(db: Annotated[AsyncSession, Depends(get_db)], review_: Crea
                      get_user: Annotated[dict, Depends(get_current_user)]):
     if get_user.get('is_admin') or get_user.get('is_customer'):
         product: Product = await db.scalar(select(Product).where(and_(Product.id == review_.product_id,
-                                                                      Product.is_active.is_(True)))
-)
+                                                                      Product.is_active.is_(True))))
         if product:
 
             rating_id = await db.execute(insert(Rating).values(
@@ -104,7 +103,9 @@ async def add_review(db: Annotated[AsyncSession, Depends(get_db)], review_: Crea
 async def delete_review(db: Annotated[AsyncSession, Depends(get_db)], review_id: int,
                         get_user: Annotated[dict, Depends(get_current_user)]):
     if get_user.get('is_admin'):
-        review = await db.scalar(select(Review).where(and_(Review.id == review_id, Review.is_active.is_(True))).options(
+        review = await db.scalar(select(Review).where(
+            and_(Review.id == review_id, Review.is_active.is_(True))
+        ).options(
             selectinload(Review.rating)
         ))
 

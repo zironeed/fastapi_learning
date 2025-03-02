@@ -4,6 +4,7 @@ from app.routers import products, category, auth, permissions, reviews
 
 app = FastAPI()
 
+
 @app.get('/')
 async def welcome() -> dict:
     return {'message': 'E-Commerce APP'}

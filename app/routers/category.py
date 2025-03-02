@@ -14,7 +14,7 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 
 @router.get('/')
 async def get_all_categories(db: Annotated[AsyncSession, Depends(get_db)]):
-    categories = await db.scalars(select(Category).where(Category.is_active == True))
+    categories = await db.scalars(select(Category).where(Category.is_active is True))
     return categories.all()
 
 
@@ -25,8 +25,8 @@ async def create_category(
 ):
     if get_user.get('is_admin'):
         await db.execute(insert(Category).values(name=create_category.name,
-                                           parent_id=create_category.parent_id,
-                                           slug=slugify(create_category.name)))
+                                                 parent_id=create_category.parent_id,
+                                                 slug=slugify(create_category.name)))
         await db.commit()
         return {
             'status_code': status.HTTP_201_CREATED,

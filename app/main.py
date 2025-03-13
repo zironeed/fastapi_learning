@@ -1,7 +1,10 @@
 import time
+from datetime import datetime, timezone, timedelta
 from uuid import uuid4
 
-from fastapi import FastAPI
+from celery import Celery
+from celery.schedules import crontab
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -13,9 +16,39 @@ from starlette.responses import JSONResponse
 
 from app.routers import products, category, auth, permissions, reviews
 from middleware import TimingMiddleware
+from tasks import call_background_task
+
 
 app = FastAPI(title='Ecommerce API v1',
               description='Educational project about an online store (ver. 1)')
+
+celery = Celery(
+    __name__,
+    broker='redis://127.0.0.1:6379/0',
+    backend='redis://127.0.0.1:6379/0',
+    broker_connection_retry_on_startup=True
+)
+# celery -A main.celery beat --loglevel=info
+# celery -A main.celery worker --loglevel=info -P gevent
+# celery -A main.celery flower
+
+celery.conf.beat_schedule = {
+    'run-me-background-task': {
+        'task': 'task.call_background_task',
+        'schedule': 60.0,
+        'args': ('Test text message',)
+    }
+}
+
+# celery.conf.beat_schedule = {
+#     'run-me-background-task': {
+#         'task': 'task.call_background_task',
+#         'schedule': crontab(hour=7, minute=0),
+#         'args': ('Test text message',)
+#     }
+# }
+
+
 @app.middleware("http")
 async def log_middleware(request: Request, call_next):
     log_id = str(uuid4())
@@ -70,7 +103,10 @@ app.mount('/v1', app)
 
 
 @app.get('/')
-async def welcome() -> dict:
+async def welcome(message: str) -> dict:
+    call_background_task.apply_async(args=[message], countdown=60*5)
+    task_datetime = datetime.now(timezone.utc) + timedelta(minutes=10)
+    call_background_task.apply_async(args=[message], eta=task_datetime)
     welcome_msg()
     return {'message': 'E-Commerce APP'}
 
